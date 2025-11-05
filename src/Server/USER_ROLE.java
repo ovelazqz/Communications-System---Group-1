@@ -1,4 +1,4 @@
-package Client;
+package Server;
 
 public enum USER_ROLE {
 	 EMPLOYEE,
