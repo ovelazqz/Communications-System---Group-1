@@ -8,6 +8,7 @@ public class Client {
 	
 	
 	
+	
 	// constructor not complete
 	public Client() {
 		this.sessionID = ++count;
