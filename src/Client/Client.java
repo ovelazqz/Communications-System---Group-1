@@ -7,6 +7,7 @@ public class Client {
 	// more attributes required
 	
 	
+	
 	// constructor not complete
 	public Client() {
 		this.sessionID = ++count;
