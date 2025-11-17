@@ -1,6 +1,6 @@
 package Server;
 // idk if this right
-import java.net.serverSocket;
+import java.net.ServerSocket;
 import java.util.List;
 
 // idk if this is right 
@@ -9,6 +9,7 @@ public class Server {
 	private List<ClientHandler> clientHandlers;
 	private UserCollection userCollection;
 	private boolean isRunning;
+	
 	
 	
 	public void start() {
