@@ -1,6 +1,7 @@
-package Client;
+package Common;
 
 public enum REQUEST_TYPE {
+	CONFIRM_CONNECTION,
 	SIGN_IN,
 	SEND_MESSAGE,
 	CREATE_GROUP_CHAT,
