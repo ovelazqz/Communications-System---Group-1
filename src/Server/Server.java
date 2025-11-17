@@ -1,5 +1,7 @@
 package Server;
 // idk if this right
+
+import Common.Message; // access to Message Class
 import java.net.ServerSocket;
 import java.util.List;
 
