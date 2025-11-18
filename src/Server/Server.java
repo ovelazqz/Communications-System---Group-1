@@ -5,10 +5,13 @@ import Common.Message; // access to Message Class
 import java.net.ServerSocket;
 import java.util.List;
 
+import Client.Request;
+
 // idk if this is right 
 public class Server {
 	private ServerSocket serverSocket;
-	private List<ClientHandler> clientHandlers;
+	// Changed to User object, so a collection of Users each using a thread using a method below?
+	private List<User> clientHandlers;
 	private UserCollection userCollection;
 	private boolean isRunning;
 	
@@ -22,7 +25,7 @@ public class Server {
 		// add code
 	}
 							// idk if this right 
-	public void handleRequest(Request request, ClinetHandler handler) {
+	public void handleRequest(Request request, User handler) {
 		//add code 
 	}
 	
@@ -30,11 +33,11 @@ public class Server {
 		//add code 
 	}
 	
-	public void registerClint(ClientHandler handler) {
+	public void registerClint(User handler) {
 		//add code
 	}
 	
-	public void removeClient(ClientHandler handler) {
+	public void removeClient(User handler) {
 		//add code
 	}
 
