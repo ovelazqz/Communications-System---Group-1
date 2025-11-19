@@ -1,4 +1,4 @@
-package Server;
+package Common;
 
 public enum USER_ROLE {
 	 EMPLOYEE,
