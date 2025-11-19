@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-//import enumerates.STATUS;
+import Common.STATUS;
 
 public class Response implements Serializable {
     private static final long serialVersionUID = 1L;
