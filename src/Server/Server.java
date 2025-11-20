@@ -11,6 +11,9 @@ import Client.Request;
 public class Server {
 	private ServerSocket serverSocket;
 	// Changed to User object, so a collection of Users each using a thread using a method below?
+	// The User's ID will be their session ID, that way we can easily check if the user is online and if not then store message
+	
+	
 	private List<User> clientHandlers;
 	private UserCollection userCollection;
 	private boolean isRunning;
