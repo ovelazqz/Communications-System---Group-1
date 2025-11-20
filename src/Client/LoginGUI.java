@@ -1,6 +1,9 @@
 package Client;
 
 import javax.swing.*;
+
+import Common.Message;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -9,59 +12,99 @@ import java.io.*;
 
 
 
-public class LoginGUI implements UserInterface {
+public class LoginGUI implements UserInterface{
 	
-	Client client; // to access the character limit checker
-	
-	private JFrame frame;
-	
-	private JTextField username;
-	private JTextField password;
-	
+	private static Client client; // to access the character limit checker
 	
 	public LoginGUI() throws ClassNotFoundException {
-		
+        
+        createUI();
+  
+ 	}
+           
+// 		  ** for future image **
+//        ImageIcon image = new ImageIcon(); // create an ImageIcon
+//        frame.setIconImage(null); // change icon of frame
+//        frame.getContentPane().setBackground(null); //change color of background
+        
+//        frame.setVisible(true);
+//	}
+	
+	
+	
+	private static void createUI() throws ClassNotFoundException {
+		// add GUI
 		try {
-			this.client = Client.getInstance();
+			client = Client.getInstance();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		createWindow();	}
-	
-	public void createWindow() {
-		frame = new JFrame("Communication System");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		JFrame frame = new JFrame();
+		JButton loginButton = new JButton("Log In");
+		loginButton.setEnabled(false);
+		frame.setTitle("/chat."); // placeholder title 
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // exit out of application
         frame.setSize(400, 500);
-        // Setting the minimum allowed size that way the user can't just shrink the whole GUI down to nothing
-        frame.setMinimumSize(new Dimension(400, 500));
-        // Setting the maximum allowed size
-        frame.setMaximumSize(new Dimension(400, 500));
+        frame.setResizable(false); // prevent frame from being resized
         
         frame.setLocationRelativeTo(null);
         
-        createUI(frame);
         
         // when the window is first created, the red will indicate that it is not connected
-        frame.setBackground(Color.RED);
-        
         // if connected then it will turn green
         if (client.isConnected()) {
         	frame.setBackground(Color.GREEN);
+        } else {
+        	frame.setBackground(Color.RED);
         }
-//        frame.setForeground(Color.RED);
-        //frame.getContentPane().setBackground(Color.BLUE);
         
-        //createUI(frame);
+        TextField usernameField = new TextField("Username");
+        usernameField.setMaximumSize(new Dimension(250, usernameField.getPreferredSize().height)); 
+        TextField passwordField = new TextField("Password");
+        passwordField.setMaximumSize(new Dimension(250, passwordField.getPreferredSize().height)); 
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new GridBagLayout());
         
+        mainPanel.add(usernameField);
+        mainPanel.add(passwordField);
+        
+
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        
+        mainPanel.add(usernameField);
+        mainPanel.add(passwordField);
+        mainPanel.add(loginButton);
+        frame.add(mainPanel);
         frame.setVisible(true);
-	}
-	
-	public void createUI(JFrame frame) {
-		// add GUI
+        
+        
+		loginButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				Send(usernameField.getText(),passwordField.getText());
+				// send()
+				// read response
+				// if yes -> close this gui and open next gui
+				// if no  -> pop-up error message
+			}
+			
+		});
+		
 	}
 	 
+	public static void Send(String username, String password) {
+	    
+	       
+	}
+
+
+	
 	public void processCommands() {
-		// will handle inputs?
-		// will have the event listeners for the button press??
+		
+		
 	}
 }
