@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -13,9 +14,12 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
 // note to self: When creating group chat, user selects other user from drop down and adds (appends) to list of recipients. 
 //               Once they click create, it sends the request over to server. 
+
+// When Server sends a message over, create new thread to refresh content
 
 public class EmployeeGUI {
 	private JFrame frame;
@@ -81,10 +85,10 @@ public class EmployeeGUI {
         
         
         // action listeners
-//        newChatButton.addActionListener(e -> createNewChat());
-//        deleteChatButton.addActionListener(e -> deleteChat());
-//        logOutButton.addActionListener(e -> logOut());
-//        filterButton.addActionListener(filter());
+        newChatButton.addActionListener(e -> createNewChat());
+        deleteChatButton.addActionListener(e -> deleteChat());
+        logOutButton.addActionListener(e -> logOut());
+        filterButton.addActionListener(filter());
         
         buttonsPanel.add(newChatButton);
         buttonsPanel.add(Box.createVerticalStrut(5));
@@ -96,6 +100,72 @@ public class EmployeeGUI {
         
         
         leftPanel.add(buttonsPanel, BorderLayout.SOUTH);
+        
+        mainPanel.add(leftPanel, BorderLayout.WEST);
+        
+        // right panel to display chat
+        rightPanel = new JPanel();
+        rightPanel.setLayout(new BorderLayout());
+        rightPanel.setBackground(Color.WHITE);
+        
+        // message display inside the right panel
+        
+        messagesPanel = new JPanel();
+        messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
+        messagesPanel.setBackground(Color.WHITE);
+        JScrollPane messagesScroll = new JScrollPane(messagesPanel);
+        messagesScroll.setBorder(BorderFactory.createTitledBorder("Messages"));
+        rightPanel.add(messagesScroll, BorderLayout.CENTER);
+        
+        // text input panel
+        inputPanel = new JPanel();
+        inputPanel.setLayout(new BorderLayout());
+        inputPanel.setBackground(new Color(200, 200, 200));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        JTextField messageInput = new JTextField();
+        messageInput.setPreferredSize(new Dimension(0, 40));
+        inputPanel.add(messageInput, BorderLayout.CENTER);
+
+        JButton sendButton = new JButton("Send");
+        sendButton.setPreferredSize(new Dimension(80, 40));
+        sendButton.addActionListener(e -> sendMessage(messageInput));
+        inputPanel.add(sendButton, BorderLayout.EAST);
+
+        rightPanel.add(inputPanel, BorderLayout.SOUTH);
+
+        mainPanel.add(rightPanel, BorderLayout.CENTER);
+
+        frame.add(mainPanel);
+        frame.setVisible(true);
+        
+        
+        
 		
+	}
+
+	private ActionListener filter() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private Object logOut() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private Object deleteChat() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private Object createNewChat() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private Object sendMessage(JTextField messageInput) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
