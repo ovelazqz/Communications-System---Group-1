@@ -2,8 +2,6 @@ package Common;
 
 import java.util.*;
 
-import Server.UserCollection;
-
 public class User {
 	private UserCollection userCollection;
 	private static int count = 0;
@@ -16,7 +14,7 @@ public class User {
 	
 	public User(String username, String password, USER_ROLE role) {
 		this.uniqueID = "user#" + ++count;
-		if (userCollection.doesItExist(username)) {
+		if (userCollection.isValidUsername(username)) {
 			// Error account already exists
 		} else {
 			this.setUsername(username);
