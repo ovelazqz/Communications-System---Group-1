@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import Common.Message;
+
 public class ChatManager implements Serializable{
 	//Creates new instances of private or groupchat
 	private static final long serialVersionUID = 1L;
@@ -21,7 +23,9 @@ public class ChatManager implements Serializable{
 		}
 		
 		String name = String.join(", ", recipients);
-		PrivateChat chat = new PrivateChat(name, new ArrayList<>(recipients));
+		String rec = String.join(", ", recipients);
+		
+		PrivateChat chat = new PrivateChat(name, rec);
 		privateChats.put(chat.getChatID(), chat);
 		modified = true;
 		return chat;
@@ -91,8 +95,8 @@ public class ChatManager implements Serializable{
 	
 	public void save() {
 		
-		privateChats.values().forEach(PrivateChat::save);
-        groupChats.values().forEach(GroupChat::save);
+		privateChats.values().forEach(PrivateChat::saveChat);
+        groupChats.values().forEach(GroupChat::saveChat);
         modified = false;
 		
 	}
