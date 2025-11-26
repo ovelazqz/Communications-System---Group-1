@@ -40,30 +40,61 @@ public class ChatManager implements Serializable{
 	public PrivateChat getPrivateChat(String chatID) {
 		return privateChats.get(chatID);
 	}
-	//Search for private chat by ID
+	//Search for group chat by ID
 	public GroupChat getGroupChat(String chatID) {
 		return groupChats.get(chatID);
 	}
 	
 	public void addMessageToChat(String chatID, Message message) {
 		
+		if (chatID == null || chatID.isEmpty()) {
+            throw new IllegalArgumentException("chatID cannot be null or empty");
+        }
+        if (message == null) {
+            throw new IllegalArgumentException("message cannot be null");
+        }
+
+        PrivateChat p = privateChats.get(chatID);
+        if (p != null) {
+            p.addMessage(message);
+            modified = true;
+            return;
+        }
+
+        GroupChat g = groupChats.get(chatID);
+        if (g != null) {
+            g.addMessage(message);
+            modified = true;
+            return;
+        }
+
+        throw new NoSuchElementException("Chat not found: " + chatID);
+		
 	}
 	
 	public void removeChat(String chatID) {
+		
+		boolean removed = false;
+        if (privateChats.remove(chatID) != null) removed = true;
+        if (groupChats.remove(chatID) != null)   removed = true;
+        if (removed) modified = true;
 		
 	}
 	
 	public List<Object> getAllChats(){
 		
+		List<Object> all = new ArrayList<>(privateChats.values());
+        all.addAll(groupChats.values());
+        return Collections.unmodifiableList(all);
+		
 	}
 	
 	public void save() {
 		
+		privateChats.values().forEach(PrivateChat::save);
+        groupChats.values().forEach(GroupChat::save);
+        modified = false;
+		
 	}
-	
-	
-	
-	
-	
 
 }
