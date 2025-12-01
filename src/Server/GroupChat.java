@@ -33,7 +33,7 @@ public class GroupChat implements Serializable{
 	}
 	
 	public String getRecipients() {
-		return recipients;
+		return String.join(", ", recipients);
 	}
 	
 	public String getMessages() {
