@@ -1,108 +1,146 @@
 package Client;
 
-
 import Common.*;
-import Server.STATUS;
-
 import java.io.*;
 import java.net.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Client {
-	
-	// more attributes required
-	private Socket socket;
-	private ObjectOutputStream output;
-	private ObjectInputStream input;
-	private GUI_STATE state;
-	private static boolean signedIn = false;
-	private static boolean connected = false;
-	private static final int CHARACTER_LIMIT = 200;
-	private static Client instance;
-	
-	//private LoginGUI login;
-	
-	public static void main(String[] args) throws IOException, ClassNotFoundException {
-		
-		Client client = Client.getInstance();
-		UserInterface user = new LoginGUI();
+    private Socket socket;
+    private ObjectOutputStream output;
+    private ObjectInputStream input;
+//    private GUI_STATE state;
+//    private static boolean signedIn = false;
+    private static boolean connected = false;
+    private static final int CHARACTER_LIMIT = 200;
+    private static Client instance;
+    
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        Client client = Client.getInstance();
+        UserInterface user = new LoginGUI(client);
         user.processCommands();
-		
-		// needs to ensure it can only be executed once
-	}
-	
-	
-	
-	private Client() throws IOException, ClassNotFoundException {
-		attemptConnection();
-		
-		socket = new Socket("127.0.0.1", 5555);
-		
-		if (socket.isConnected()) {
-	        System.out.println("Connected to Server...");
-	    } else {
-	        throw new IOException("Failed to connect to Server");
-	    } // debugging prints will remove later
-													  // need to add an if case to ensure connection was made
-	}
-	
-	private void attemptConnection() throws IOException, ClassNotFoundException {
-		try {
-			socket = new Socket("127.0.0.1", 5555);
-			
-			output = new ObjectOutputStream(socket.getOutputStream());
-			output.flush();
-			
-			input = new ObjectInputStream(socket.getInputStream());
-			
-			
-			Message checkConnection = new Message(/*REQUEST_TYPE.CONFIRM_CONNECTION Constructor for Message class has not been established*/);
-			output.flush();
-			
-			Message response = (Message) input.readObject();
-			
-			if (response.getType().equals(REQUEST_TYPE.CONFIRM_CONNECTION) && response.getStatus().equals(STATUS.SUCCESS)) {
-				connected = true;
-				System.out.println("Connected to Server..."); // Debug
-				
-			} else {
-				connected = false;
-				
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-	}
-	
-	public static Client getInstance() throws IOException, ClassNotFoundException { // Planned on using a Singleton here but did not work as intended... 
-		if (instance == null) {														// will makes changes later.. so far works...
-			instance = new Client();
-		}
-		
-		return instance;
-	}
-	
-	
-	public void setConnected(boolean connected) {
-		this.connected = connected;
-	}
-	
-	public boolean isConnected() {
-		return connected;
-	}
-	
-	public boolean checkMessageLength(String msg) {
-		if (msg.length() <= 200) {
-			return true;
-		}
-		return false;
-	}
-	
-	public void close() throws IOException {
-		if (socket != null && !socket.isClosed()) {
-			socket.close();
-		}
-	}
-	
-	
+    }
+    
+    private Client() throws IOException, ClassNotFoundException {
+        attemptConnection();
+    }
+    
+    private void attemptConnection() throws IOException, ClassNotFoundException {
+        try {
+            socket = new Socket("127.0.0.1", 5050);
+            output = new ObjectOutputStream(socket.getOutputStream());
+            output.flush();
+            input = new ObjectInputStream(socket.getInputStream());
+            
+            // Send initial connection message
+            Message checkConnection = new Message("confirm connection");
+            output.writeObject(checkConnection);
+            output.flush();
+            
+            // Wait for server response
+            Message response = (Message) input.readObject();
+            
+            if (response.getStatus().equals("success")) {
+                connected = true;
+                System.out.println("Connected to Server...");
+            } else {
+                connected = false;
+                throw new IOException("Server rejected connection");
+            }
+        } catch (IOException e) {
+            connected = false;
+            System.out.println("Connection failed: " + e.getMessage());
+            throw e;
+        } catch (ClassNotFoundException e) {
+            connected = false;
+            System.out.println("Error reading response: " + e.getMessage());
+            throw e;
+        }
+    }
+    
+    public static Client getInstance() throws IOException, ClassNotFoundException {
+        if (instance == null) {
+            instance = new Client();
+        }
+        return instance;
+    }
+    
+    public void setConnected(boolean connected) {
+        Client.connected = connected;
+    }
+    
+    public boolean isConnected() {
+        return connected;
+    }
+    
+    public boolean checkMessageLength(String msg) {
+        return msg.length() <= CHARACTER_LIMIT;
+    }
+    
+    public void close() throws IOException {
+        if (socket != null && !socket.isClosed()) {
+            socket.close();
+        }
+    }
+    
+    public ObjectOutputStream getOutput() {
+        return output;
+    }
+    
+    public ObjectInputStream getInput() {
+        return input;
+    }
+    
+    // Send login request to server
+    public Message sendLoginRequest(String username, String password) throws IOException, ClassNotFoundException {
+        Message loginMsg = new Message("login");
+        loginMsg.setSender(username);
+        loginMsg.setText(password);
+        
+        output.writeObject(loginMsg);
+        output.flush();
+        
+        // Wait for response
+        Message response = (Message) input.readObject();
+        return response;
+    }
+    
+    // Send logout request to server
+    public void sendLogoutRequest() throws IOException {
+        Message logoutMsg = new Message("logout");
+        output.writeObject(logoutMsg);
+        output.flush();
+    }
+    
+    // Send create private chat request
+    public void sendCreatePrivateChatRequest(String recipient) throws IOException {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("recipient", recipient);
+        Message msg = new Message("create_private_chat", "create_private", payload);
+        
+        output.writeObject(msg);
+        output.flush();
+    }
+    
+    // Send create group chat request
+    public void sendCreateGroupChatRequest(String groupName) throws IOException {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("groupName", groupName);
+        Message msg = new Message("create_group_chat", "create_group", payload);
+        
+        output.writeObject(msg);
+        output.flush();
+    }
+    
+    // Send a message
+    public void sendChatMessage(String chatID, String messageText) throws IOException {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("chatID", chatID);
+        Message msg = new Message("send_message", "send_msg", payload);
+        msg.setText(messageText);
+        
+        output.writeObject(msg);
+        output.flush();
+    }
 }
