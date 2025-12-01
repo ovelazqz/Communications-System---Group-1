@@ -12,15 +12,14 @@ public class GroupChat implements Serializable{
 	private static int IDCount = 0;    // static counter
 	private final int chatID;    //final unique ID for each chat
 	private String chatName;    //name of chat
-	private String recipients;
+	private List<String> recipients;
 	private List<Message> messages;    //list of messages
 	private boolean modified; 
 	
 	public GroupChat(String chatName, List<String> recipients) {
 		this.chatID = ++IDCount;
 		this.chatName = chatName;
-		this.recipients = (recipients == null) 
-				? new ArrayList<>(): new ArrayList<>(recipients));
+		this.recipients = (recipients == null) ? new ArrayList<>(): new ArrayList<>(recipients);
 		this.messages = new ArrayList<>();
 		this.modified = false;
 	}
