@@ -74,9 +74,8 @@ public class Server {
 	}
 	
 	
-	public synchronized boolean isUserOnline(String username) {
-		return onlineClients.values().stream().anyMatch(handler -> handler.getUsername().equals(username));
-		
+	public synchronized boolean isUserOnline(String uniqueID) {
+	    return onlineClients.containsKey(uniqueID);
 	}
 	
 	
@@ -308,38 +307,42 @@ public class Server {
 			}
 			
 		}
+		
 		private void handleLogin(Message message) {
 			String username = message.getSender();
-			String password = message.getText();
-			
-			
-			User user = server.getUserCollection().getUser(username);
-			
-			if (user != null && user.getPassword().equals(password)) {
-				this.username = username;
-				this.sessionID = user.getUniqueID();
-				this.isLoggedIn = true;
-				
-				
-				server.registerClient(sessionID, this);
-				
-				
-				Map<String, Object> payload = new HashMap<>();
-				payload.put("userID", user.getUniqueID());
-				payload.put("username", username);
-				payload.put("sessionID", sessionID);
-				payload.put("userRole", user.getRole().toString());
-				
-				Message response = new Message("response", "success", "login", payload);
-				
-				try {
-					sendMessage(response);
-				} catch (IOException e) {
-					System.out.println("Error sending login response: " + e.getMessage());
-				}
-			} else {
-				sendError("Invalid username or password");
-			}
+		    String password = message.getText();
+		    
+		    User user = server.getUserCollection().getUser(username);
+		    
+		    if (user != null && user.getPassword().equals(password)) {
+		        // Check if user is already online using uniqueID
+		        if (server.isUserOnline(user.getUniqueID())) {
+		            sendError("User is already logged in from another location");
+		            return;
+		        }
+		        
+		        this.username = username;
+		        this.sessionID = user.getUniqueID();
+		        this.isLoggedIn = true;
+		        
+		        server.registerClient(sessionID, this);
+		        
+		        Map<String, Object> payload = new HashMap<>();
+		        payload.put("userID", user.getUniqueID());
+		        payload.put("username", username);
+		        payload.put("sessionID", sessionID);
+		        payload.put("userRole", user.getRole().toString());
+		        
+		        Message response = new Message("response", "success", "login", payload);
+		        
+		        try {
+		            sendMessage(response);
+		        } catch (IOException e) {
+		            System.out.println("Error sending login response: " + e.getMessage());
+		        }
+		    } else {
+		        sendError("Invalid username or password");
+		    }
 			
 		}
 		
@@ -366,8 +369,6 @@ public class Server {
 	        return isLoggedIn;
 	    }
    }
-  
-  
-	
+
 }
 
