@@ -28,6 +28,8 @@ public class Client {
     
     private void attemptConnection() throws IOException, ClassNotFoundException {
         try {
+        	// socket = new Socket("[Your IP Address Here]", 5050);
+        	// socket = new Socket("127.0.0.1", 5050); // This is only to self
             socket = new Socket("134.154.40.175", 5050);
             output = new ObjectOutputStream(socket.getOutputStream());
             output.flush();
