@@ -2,6 +2,7 @@ package Tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import Common.Message; 
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ public class JUnitMessageClass {
 
     @BeforeEach
     void resetCounter() throws Exception {
-        // Reset count using reflection since it's private static
+        // Reset the private static count field
         var field = Message.class.getDeclaredField("count");
         field.setAccessible(true);
         field.setInt(null, 0);
