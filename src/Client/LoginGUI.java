@@ -165,4 +165,10 @@ public class LoginGUI implements UserInterface {
     public void processCommands() {
         // Handled by button listeners
     }
+
+	@Override
+	public void handleIncomingMessage(Message message) {
+		// TODO Auto-generated method stub
+		
+	}
 }

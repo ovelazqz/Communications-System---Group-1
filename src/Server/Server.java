@@ -10,10 +10,10 @@ public class Server {
 	private ServerSocket serverSocket;
 	private static final int PORT = 5050;
 	private boolean isRunning;
-	
 	private Map<String, ClientHandler> onlineClients;
 	private UserCollection userCollection;
 	private ChatManager chatManager;
+	
 	
 	public Server() throws IOException {
 		this.serverSocket = new ServerSocket(PORT);
@@ -93,6 +93,16 @@ public class Server {
        System.out.println("User " + username + " is not online");
    }
 	
+	public synchronized void broadcast(Message message) {
+	    for (ClientHandler handler : onlineClients.values()) {
+	        try {
+	            handler.sendMessage(message);
+	        } catch (IOException e) {
+	            System.out.println("Error broadcasting message: " + e.getMessage());
+	        }
+	    }
+	}
+	
 	
 	public synchronized void broadcastMessage(Message message, String excludeUser) {
        for (ClientHandler handler : onlineClients.values()) {
@@ -144,6 +154,8 @@ public class Server {
    		
    	}
    	
+
+   	
    	@Override
    	public void run() {
    		try {
@@ -179,7 +191,10 @@ public class Server {
                handleCreatePrivateChat(message);
            } else if (type.equals("create_group_chat") && isLoggedIn) {
                handleCreateGroupChat(message);
-           } else if (type.equals("get_chat_list") && isLoggedIn) {
+           }else if (type.equals("view_chat_logs") && isLoggedIn) {
+        	    handleViewChatLogs(message);
+           } 
+           	else if (type.equals("get_chat_list") && isLoggedIn) {
                handleGetChatList(message);
            } else if (type.equals("confirm connection")) {
                handleConfirmConnection(message);
@@ -187,6 +202,29 @@ public class Server {
                sendError("Unknown message type");
            }
    	}
+   	
+   	
+ // Server.java – inside ClientHandler
+
+   	private void handleViewChatLogs(Message message) {
+   	    // Use ChatManager to build a full log string
+   	    String logs = server.getChatManager().toString(); // This already lists all private + group chats
+
+   	    Map<String, Object> payload = new HashMap<>();
+   	    payload.put("logs", logs);
+
+   	    // "chat_logs" is a sub-type so the client can recognize it
+   	    Message response = new Message("response", "success", "chat_logs", payload);
+
+   	    try {
+   	        sendMessage(response);
+   	    } catch (IOException e) {
+   	        System.out.println("Error sending chat logs: " + e.getMessage());
+   	    }
+   	}
+
+   	
+   	
 		private void sendError(String errorMessage) {
 			 Map<String, Object> payload = new HashMap<>();
 		        payload.put("error", errorMessage);
@@ -223,25 +261,47 @@ public class Server {
 			
 		}
 		private void handleCreateGroupChat(Message message) {
-			
-			// requires a recipients list *****************
-			String groupName = (String) message.getData("groupName");
-			
-	       
-	        // Create group chat
-//	        String chatID = server.getChatManager().createGroupChat(groupName, username);
-	       
-	        // Send response
-	        Map<String, Object> payload = new HashMap<>();
-//	        payload.put("chatID", chatID);
-	        Message response = new Message("response", "success", "create_group", payload);
-	        try {
-	            sendMessage(response);
-	        } catch (IOException e) {
-	            System.out.println("Error sending create group response: " + e.getMessage());
-	        }
-			
+		    String groupName = (String) message.getData("groupName");
+
+		    List<String> recipients = new ArrayList<>();
+		    recipients.add(username);
+
+		    try {
+		        GroupChat chat = server.getChatManager().createGroupChat(groupName, recipients);
+		        String chatID = chat.getChatID();
+
+		        Map<String, Object> payload = new HashMap<>();
+		        payload.put("chatID", chatID);
+		        payload.put("groupName", groupName);
+		        payload.put("recipients", recipients);
+
+		        Message response = new Message("response", "success", sessionID, payload);
+		        sendMessage(response);
+
+		        Message notify = new Message("new_group_chat", "", payload);
+		        server.broadcast(notify);
+
+		    } catch (IllegalArgumentException ex) {
+		        // group name already exists, send an error back just to the creator
+		        Map<String, Object> payload = new HashMap<>();
+		        payload.put("error", ex.getMessage());
+		        Message response = new Message("response", "error", sessionID, payload);
+		        try {
+		            sendMessage(response);
+		        } catch (IOException e) {
+		            System.out.println("Error sending create group error: " + e.getMessage());
+		        }
+		    } catch (IOException e) {
+		        System.out.println("Error sending create group response: " + e.getMessage());
+		    }
 		}
+
+		
+		// Broadcast a message to ALL connected clients
+		
+
+
+
 		private void sendMessage(Message message) throws IOException {
 			output.writeObject(message);
 	        output.flush();
@@ -268,28 +328,80 @@ public class Server {
 			
 		}
 		private void handleSendMessage(Message message) {
-			String chatID = (String) message.getData("chatID");
-			String text = message.getText();
-			
-			
-			server.getChatManager().addMessageToChat(chatID, message);
-			
-			
-			// Send to recipient if Online
-			// To do: implement message routing to recipient(s) ******************
-			
-			// Send confirmation to sender
-			Map<String, Object> payload = new HashMap<>();
-			payload.put("messageID", "msg");
-			Message response = new Message("response", "success", payload);
-			
-			try {
-				sendMessage(response);
-			} catch (IOException e) {
-				System.out.println("Error sending message response: " + e.getMessage());
-			}
-			
+		    String chatID = (String) message.getData("chatID");
+		    String text   = message.getText();
+
+		    if (chatID == null || chatID.isEmpty()) {
+		        System.out.println("Missing chatID in send_message");
+		        return;
+		    }
+
+		    // tag sender for history
+		    message.setSender(username);
+
+		    // save in server-side chat history
+		    server.getChatManager().addMessageToChat(chatID, message);
+
+		    // figure out recipients for this chat
+		    List<String> recipients = new ArrayList<>();
+
+		    // Try as group chat (your ChatManager stores group chats keyed by name)
+		    GroupChat g = server.getChatManager().getGroupChat(chatID);
+		    if (g != null) {
+		        recipients.addAll(g.getRecipients());   // List<String> of usernames
+		    } else {
+		        // Try as private chat
+		        PrivateChat p = server.getChatManager().getPrivateChat(chatID);
+		        if (p != null) {
+		            String recString = p.getRecipients(); // e.g. "user1, user2"
+		            if (recString != null) {
+		                for (String r : recString.split(",")) {
+		                    String trimmed = r.trim();
+		                    if (!trimmed.isEmpty()) {
+		                        recipients.add(trimmed);
+		                    }
+		                }
+		            }
+		        }
+		    }
+
+		    // If we couldn't find chat or recipients, just stop
+		    if (recipients.isEmpty()) {
+		        System.out.println("No recipients for chatID=" + chatID);
+		        return;
+		    }
+
+		    // Build message that will be sent to other clients
+		    Message forward = new Message("receive_message");
+		    forward.setText(text);
+		    forward.setSender(username);
+		    forward.getPayload().put("chatID", chatID);
+
+		    // Send ONLY to users in that chat (and not back to sender)
+		    for (ClientHandler handler : server.onlineClients.values()) {
+		        String targetUser = handler.getUsername();
+		        if (recipients.contains(targetUser) && !targetUser.equals(username)) {
+		            try {
+		                handler.sendMessage(forward);
+		            } catch (IOException e) {
+		                System.out.println("Error forwarding message: " + e.getMessage());
+		            }
+		        }
+		    }
+
+		    // Optional: send simple ACK back to sender
+		    Map<String, Object> payload = new HashMap<>();
+		    payload.put("messageID", "msg");
+		    Message response = new Message("response", "success", payload);
+		    try {
+		        sendMessage(response);
+		    } catch (IOException e) {
+		        System.out.println("Error sending send_message response: " + e.getMessage());
+		    }
 		}
+
+		
+
 		private void handleLogout(Message message) {
 			if (isLoggedIn) {
 				server.unregisterClient(sessionID);

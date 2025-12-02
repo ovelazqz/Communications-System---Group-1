@@ -2,6 +2,9 @@ package Client;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+
+import Client.*;
 
 
 public class ITAdminGUI extends EmployeeGUI {
@@ -26,6 +29,17 @@ public class ITAdminGUI extends EmployeeGUI {
 	    
 	    manageUsersButton.addActionListener(e -> openManageUsers());
 	    chatLogsButton.addActionListener(e -> openChatLogs());
+	    
+	    chatLogsButton.addActionListener(e -> {
+	        try {
+	            client.requestChatLogs();
+	        } catch (IOException ex) {
+	            ex.printStackTrace();
+	            JOptionPane.showMessageDialog(null,
+	                "Failed to request chat logs from server.",
+	                "Error", JOptionPane.ERROR_MESSAGE);
+	        }
+	    });
 	    
 	    buttonsPanel.add(Box.createVerticalStrut(10));
         buttonsPanel.add(new JSeparator());

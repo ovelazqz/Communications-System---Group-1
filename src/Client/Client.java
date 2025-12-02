@@ -30,7 +30,9 @@ public class Client {
         try {
         	// socket = new Socket("[Your IP Address Here]", 5050);
         	// socket = new Socket("127.0.0.1", 5050); // This is only to self
-            socket = new Socket("134.154.40.175", 5050);
+        	InetAddress localIP = InetAddress.getLocalHost();
+        	String ip = localIP.getHostAddress();
+            socket = new Socket(ip, 5050);
             output = new ObjectOutputStream(socket.getOutputStream());
             output.flush();
             input = new ObjectInputStream(socket.getInputStream());
@@ -145,4 +147,12 @@ public class Client {
         output.writeObject(msg);
         output.flush();
     }
+    
+    public void requestChatLogs() throws IOException {
+        Message msg = new Message("view_chat_logs");  // new type
+        output.writeObject(msg);
+        output.flush();
+    }
+
+	
 }

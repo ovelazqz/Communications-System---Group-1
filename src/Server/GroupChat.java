@@ -2,7 +2,7 @@ package Server;
 
 import java.io.Serializable;
 import java.util.*;
-
+import java.util.Collections;
 import Common.Message;
 
 public class GroupChat implements Serializable{
@@ -32,7 +32,16 @@ public class GroupChat implements Serializable{
 		return chatName;
 	}
 	
-	public String getRecipients() {
+	
+	public List<String> getRecipients() {
+	    return Collections.unmodifiableList(recipients);
+	}
+
+	// If not already there:
+	public List<Message> getMessages() {
+	    return Collections.unmodifiableList(messages);
+	}
+	/*public String getRecipients() {
 		return String.join(", ", recipients);
 	}
 	
@@ -45,7 +54,7 @@ public class GroupChat implements Serializable{
 			 }
 		 }
 		 return sb.toString();
-	}
+	}*/
 	
 	public void setchatName(String name) {
 		this.chatName = name;

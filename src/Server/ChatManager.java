@@ -32,14 +32,22 @@ public class ChatManager implements Serializable{
 	}
 	//Create a new group chat with a name and recipients
 	public GroupChat createGroupChat(String chatName, List<String> recipients) {
-		if(chatName == null || chatName.isEmpty()) {
-			throw new IllegalArgumentException("Group Chat cannot be empty");
-		}
-		GroupChat chat = new GroupChat(chatName, recipients == null ? new ArrayList<>(): new ArrayList<>(recipients));
-		groupChats.put(chat.getChatID(), chat);
-		modified = true;
-		return chat;
+	    if (chatName == null || chatName.isEmpty()) {
+	        throw new IllegalArgumentException("Group Chat cannot be empty");
+	    }
+
+	    // ✅ prevent duplicate group names on the server
+	    if (groupChats.containsKey(chatName)) {
+	        throw new IllegalArgumentException("Group name already exists");
+	    }
+
+	    GroupChat chat = new GroupChat(chatName, 
+	            recipients == null ? new ArrayList<>() : new ArrayList<>(recipients));
+	    groupChats.put(chatName, chat);
+	    modified = true;
+	    return chat;
 	}
+
 	//Search for private chat by ID
 	public PrivateChat getPrivateChat(String chatID) {
 		return privateChats.get(chatID);
@@ -126,5 +134,12 @@ public class ChatManager implements Serializable{
 	    return sb.toString();
 		
 	}
+	
+
+	
+	public List<GroupChat> getAllGroupChats() {
+	    return new ArrayList<>(groupChats.values());
+	}
+	
 
 }

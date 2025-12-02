@@ -9,10 +9,12 @@ import java.io.*;
 import java.util.ArrayList;
 //import java.util.HashMap;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 //import java.util.Map;
 
 public class EmployeeGUI implements UserInterface {
-    private Client client;
+    protected Client client;
     protected String username;
     protected JFrame frame;
     private JPanel messagesPanel;
@@ -20,6 +22,9 @@ public class EmployeeGUI implements UserInterface {
     protected JPanel buttonsPanel;
     private String selectedChat = null;
     private boolean listening = true;
+ // At top of class
+    private Map<String, java.util.List<String>> chatHistory = new HashMap<>();
+    private Map<String, String> chatIdToName = new HashMap<>();
     
     public EmployeeGUI(Client client, String username) {
         this.client = client;
@@ -34,8 +39,8 @@ public class EmployeeGUI implements UserInterface {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int width = (int) (screenSize.width * 0.95);
-        int height = (int) (screenSize.height * 0.95);
+        int width = (int) (screenSize.width * 0.65);
+        int height = (int) (screenSize.height * 0.65);
         frame.setSize(width, height);
         frame.setLocationRelativeTo(null);
         
@@ -136,15 +141,72 @@ public class EmployeeGUI implements UserInterface {
         }).start();
     }
     
-    private void handleIncomingMessage(Message message) {
+    @Override
+
+    public void handleIncomingMessage(Message message) {
         SwingUtilities.invokeLater(() -> {
-            if (message.getType().equals("receive_message")) {
-                addMessage(message.getSender() + ": " + message.getText(), true);
+
+            String type = message.getType();
+
+            // 1️⃣ New group chat created
+            if (type.equals("new_group_chat")) {
+                String groupName = (String) message.getData("groupName");
+                String chatID    = (String) message.getData("chatID");
+
+                // Remember mapping from chatID -> groupName (if you use it)
+                if (chatID != null) {
+                    chatIdToName.put(chatID, groupName);
+                }
+
+                // Add group button to the left panel (with no duplicates if you added that logic)
+                addChatButton(groupName + " (Group)");
+                return;
             }
+
+            // 2️⃣ Incoming chat message
+            if (type.equals("receive_message")) {
+                String text   = message.getSender() + ": " + message.getText();
+                String chatID = (String) message.getData("chatID");  // from server
+
+                if (chatID == null) {
+                    // fallback: treat as current chat
+                    chatID = selectedChat;
+                }
+
+                // 1) Store in that chat's history ALWAYS
+                if (chatID != null) {
+                    chatHistory
+                        .computeIfAbsent(chatID, k -> new ArrayList<>())
+                        .add("OTHER:" + text);
+                }
+
+                // 2) Only draw now if this chat is currently open
+                if (selectedChat != null && selectedChat.equals(chatID)) {
+                    renderMessage(text, true);
+                }
+
+                return;
+            }
+
+
+            // 3️⃣ Other message types (responses, errors, etc.) can go here...
+
         });
     }
+
+
     
     private void addChatButton(String chatName) {
+        // ✅ prevent duplicate chat buttons (same name)
+        for (Component comp : chatListPanel.getComponents()) {
+            if (comp instanceof JButton) {
+                JButton btn = (JButton) comp;
+                if (btn.getText().equals(chatName)) {
+                    return; // already exists, do nothing
+                }
+            }
+        }
+
         JButton chatButton = new JButton(chatName);
         chatButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
         chatButton.setAlignmentX(JButton.LEFT_ALIGNMENT);
@@ -154,13 +216,33 @@ public class EmployeeGUI implements UserInterface {
         chatListPanel.revalidate();
         chatListPanel.repaint();
     }
+
     
     private void selectChat(String chatName) {
-        selectedChat = chatName;
+        if (chatName.endsWith(" (Group)")) {
+            selectedChat = chatName.substring(0, chatName.length() - " (Group)".length());
+        } else if (chatName.endsWith(" (Private)")) {
+            selectedChat = chatName.substring(0, chatName.length() - " (Private)".length());
+        } else {
+            selectedChat = chatName;
+        }
+
+        // Clear UI
         messagesPanel.removeAll();
+
+        // Load history for this chat, if any
+        java.util.List<String> history = chatHistory.get(selectedChat);
+        for (String stored : history) {
+            boolean isOther = stored.startsWith("OTHER:");
+            String text = stored.substring(stored.indexOf(':') + 1);
+            renderMessage(text, isOther);
+        }
+
         messagesPanel.revalidate();
         messagesPanel.repaint();
     }
+
+
     
     private void createNewChat() {
         String[] options = {"Private Chat", "Group Chat"};
@@ -200,7 +282,6 @@ public class EmployeeGUI implements UserInterface {
         if (groupName != null && !groupName.trim().isEmpty()) {
             try {
                 client.sendCreateGroupChatRequest(groupName);
-                addChatButton(groupName + " (Group)");
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(frame, "Error: " + e.getMessage());
             }
@@ -271,7 +352,9 @@ public class EmployeeGUI implements UserInterface {
         }
     }
     
-    private void addMessage(String message, boolean isOther) {
+ // UI-only renderer (no storing)
+ // Only draws a bubble on the screen, does NOT store in history
+    private void renderMessage(String message, boolean isOther) {
         JPanel messagePanel = new JPanel();
         messagePanel.setLayout(new BorderLayout());
         messagePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
@@ -301,6 +384,20 @@ public class EmployeeGUI implements UserInterface {
             parent.getVerticalScrollBar().setValue(parent.getVerticalScrollBar().getMaximum());
         }
     }
+    
+    private void addMessage(String message, boolean isOther) {
+        // Store in history for the currently selected chat
+        if (selectedChat != null) {
+            chatHistory
+                .computeIfAbsent(selectedChat, k -> new ArrayList<>())
+                .add((isOther ? "OTHER:" : "ME:") + message);
+        }
+
+        // Draw on screen
+        renderMessage(message, isOther);
+    }
+
+    
     
     @Override
     public void processCommands() {
