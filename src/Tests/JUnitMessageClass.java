@@ -13,7 +13,7 @@ public class JUnitMessageClass {
 
     @BeforeEach
     void resetCounter() throws Exception {
-        // Reset the private static count field
+
         var field = Message.class.getDeclaredField("count");
         field.setAccessible(true);
         field.setInt(null, 0);
@@ -121,7 +121,6 @@ public class JUnitMessageClass {
 
         Message cp = msg.copy();
 
-        // Ensure fields copied
         assertEquals(msg.getType(), cp.getType());
         assertEquals(msg.getStatus(), cp.getStatus());
         assertEquals(msg.getText(), cp.getText());
@@ -129,11 +128,9 @@ public class JUnitMessageClass {
         assertEquals(msg.getSessionID(), cp.getSessionID());
         assertEquals(msg.getPayload(), cp.getPayload());
 
-        // Ensure deep copy of payload
         cp.addData("extra", 999);
         assertFalse(msg.hasData("extra"));
 
-        // Ensure different uID
         assertNotEquals(msg.getuID(), cp.getuID());
     }
 }
