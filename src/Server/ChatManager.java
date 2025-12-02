@@ -100,5 +100,31 @@ public class ChatManager implements Serializable{
         modified = false;
 		
 	}
+	
+	
+	public String toString() {
+
+		StringBuilder sb = new StringBuilder();
+	    String nl = System.lineSeparator();
+
+	    for (PrivateChat pc : privateChats.values()) {
+	        sb.append("[PRIVATE] ")
+	          .append(pc.getChatID()).append(" | ")
+	          .append(pc.getChatName()).append(" | ")
+	          .append(pc.getRecipients()).append(nl);
+	        sb.append(pc.getMessages()).append(nl).append(nl);
+	    }
+
+	    for (GroupChat gc : groupChats.values()) {
+	        sb.append("[GROUP] ")
+	          .append(gc.getChatID()).append(" | ")
+	          .append(gc.getChatName()).append(" | ")
+	          .append(gc.getRecipients()).append(nl);
+	        sb.append(gc.getMessages()).append(nl).append(nl);
+	    }
+
+	    return sb.toString();
+		
+	}
 
 }
