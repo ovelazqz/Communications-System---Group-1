@@ -11,11 +11,11 @@ class TestingPrivateChat {
 
     @Test
     void constructor_setsFieldsCorrectly() {
-        PrivateChat chat = new PrivateChat("Friends", "aaron, brian");
+        PrivateChat chat = new PrivateChat("Friends", "AaronCasas, BrianHa");
 
         assertNotNull(chat.getChatID());
         assertEquals("Friends", chat.getChatName());
-        assertEquals("aaron, brian", chat.getRecipients());
+        assertEquals("AaronCasas, BrianHa", chat.getRecipients());
 
         // no messages yet
         assertEquals("", chat.getMessages());
@@ -23,26 +23,26 @@ class TestingPrivateChat {
 
     @Test
     void getMessages_returnsJoinedMessageStrings() {
-        PrivateChat chat = new PrivateChat("Friends", "aaron, brian");
+        PrivateChat chat = new PrivateChat("Friends", "AaronCasas, BrianHa");
 
         // Need to modify this to our Message constructor to match
-        Message m1 = new Message("aaron", "Hi Brian!", "2025-12-01 10:00:00");
-        Message m2 = new Message("brian", "Hi Aaron!", "2025-12-01 10:01:00");
+        Message m1 = new Message("AaronCasas", "Hi BrianHa!", "2025-12-01 10:00:00");
+        Message m2 = new Message("BrianHa", "Hi AaronCasas!", "2025-12-01 10:01:00");
 
         chat.addMessage(m1);
         chat.addMessage(m2);
 
         String all = chat.getMessages();
 
-        assertTrue(all.contains("Hi Brian!"));
-        assertTrue(all.contains("Hi Aaron!"));
+        assertTrue(all.contains("Hi BrianHa!"));
+        assertTrue(all.contains("Hi AaronCasas!"));
         // Should contain a line break between them
         assertTrue(all.contains(System.lineSeparator()));
     }
 
     @Test
     void addMessage_null_throwsException() {
-        PrivateChat chat = new PrivateChat("Friends", "aaron, brian");
+        PrivateChat chat = new PrivateChat("Friends", "AaronCasas, BrianHa");
 
         assertThrows(IllegalArgumentException.class,
                      () -> chat.addMessage(null));
@@ -58,7 +58,7 @@ class TestingPrivateChat {
 
     @Test
     void saveChat_doesNotThrow() {
-        PrivateChat chat = new PrivateChat("Friends", "aaron, brian");
+        PrivateChat chat = new PrivateChat("Friends", "AaronCasas, BrianHa");
 
         // To ensure it runs without error for now
         assertDoesNotThrow(chat::saveChat);
