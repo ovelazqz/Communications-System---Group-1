@@ -25,7 +25,7 @@ class TestingPrivateChat {
     void getMessages_returnsJoinedMessageStrings() {
         PrivateChat chat = new PrivateChat("Friends", "aaron, brian");
 
-        // TODO: adjust this to your real Message constructor
+        // Need to modify this to our Message constructor to match
         Message m1 = new Message("aaron", "Hi Brian!", "2025-12-01 10:00:00");
         Message m2 = new Message("brian", "Hi Aaron!", "2025-12-01 10:01:00");
 
@@ -60,7 +60,7 @@ class TestingPrivateChat {
     void saveChat_doesNotThrow() {
         PrivateChat chat = new PrivateChat("Friends", "aaron, brian");
 
-        // Just ensure it runs without error for now
+        // To ensure it runs without error for now
         assertDoesNotThrow(chat::saveChat);
     }
 }
