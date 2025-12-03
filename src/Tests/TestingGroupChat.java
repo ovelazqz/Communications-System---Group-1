@@ -39,7 +39,7 @@ class TestingGroupChat {
         List<String> recipients = Arrays.asList("aaron", "brian");
         GroupChat chat = new GroupChat("Friends", recipients);
 
-        // TODO: adjust to match your actual Message constructor
+        // // Need to modify this to our Message constructor to match
         Message m1 = new Message("aaron", "Hi everyone!", "2025-12-01 10:00:00");
         Message m2 = new Message("brian", "Hello!", "2025-12-01 10:01:00");
 
