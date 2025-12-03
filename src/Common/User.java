@@ -10,6 +10,7 @@ public class User implements Serializable {
     private String username;
     private String password;
     private USER_ROLE role;
+    private String[] chatAccess;
    
     
     
@@ -62,4 +63,14 @@ public class User implements Serializable {
     public String toString() {
         return uniqueID + "," + username + "," + password + "," + role;
     }
+
+
+	public String[] getChatAccess() {
+		return chatAccess;
+	}
+
+
+	public void setChatAccess(String[] chatAccess) {
+		this.chatAccess = chatAccess;
+	}
 }
