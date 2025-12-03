@@ -15,13 +15,13 @@ class TestingGroupChat {
 
     @Test
     void constructor_setsFieldsCorrectly() {
-        List<String> recipients = Arrays.asList("aaron", "brian");
+        List<String> recipients = Arrays.asList("AaronCasas", "BrianHa");
         GroupChat chat = new GroupChat("Friends", recipients);
 
         assertNotNull(chat.getChatID());
         assertEquals("Friends", chat.getChatName());
         // assuming getRecipients returns a comma-separated string
-        assertEquals("aaron, brian", chat.getRecipients());
+        assertEquals("AaronCasas, BrianHa", chat.getRecipients());
         assertEquals("", chat.getMessages()); // no messages yet
     }
 
@@ -36,12 +36,12 @@ class TestingGroupChat {
 
     @Test
     void addMessage_appendsToMessages() {
-        List<String> recipients = Arrays.asList("aaron", "brian");
+        List<String> recipients = Arrays.asList("AaronCasas", "BrianHa");
         GroupChat chat = new GroupChat("Friends", recipients);
 
         // // Need to modify this to our Message constructor to match
-        Message m1 = new Message("aaron", "Hi everyone!", "2025-12-01 10:00:00");
-        Message m2 = new Message("brian", "Hello!", "2025-12-01 10:01:00");
+        Message m1 = new Message("AaronCasas", "Hi everyone!", "2025-12-01 10:00:00");
+        Message m2 = new Message("BrianHa", "Hello!", "2025-12-01 10:01:00");
 
         chat.addMessage(m1);
         chat.addMessage(m2);
@@ -54,7 +54,7 @@ class TestingGroupChat {
 
     @Test
     void addMessage_null_throwsException() {
-        GroupChat chat = new GroupChat("Friends", Arrays.asList("aaron", "brian"));
+        GroupChat chat = new GroupChat("Friends", Arrays.asList("AaronCasas", "BrianHa"));
 
         assertThrows(IllegalArgumentException.class,
                      () -> chat.addMessage(null));
@@ -70,7 +70,7 @@ class TestingGroupChat {
 
     @Test
     void saveChat_runsWithoutError() {
-        GroupChat chat = new GroupChat("Friends", Arrays.asList("aaron", "brian"));
+        GroupChat chat = new GroupChat("Friends", Arrays.asList("AaronCasas", "BrianHa"));
 
         assertDoesNotThrow(chat::saveChat);
     }
