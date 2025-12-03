@@ -2,22 +2,22 @@ package Server;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.Collections;
+
 import Common.Message;
 
 public class GroupChat implements Serializable{
 	
-	private static final long serialVersionUID = 1L;
+private static final long serialVersionUID = 1L;
 	
-	private static int IDCount = 0;    // static counter
-	private final int chatID;    //final unique ID for each chat
-	private String chatName;    //name of chat
-	private List<String> recipients;
-	private List<Message> messages;    //list of messages
-	private boolean modified; 
+	private static int IDCount = 0;
+	private String chatID; 
+	private String chatName;
+	protected List<String> recipients;
+	private List<Message> messages;
+	private boolean modified;
 	
 	public GroupChat(String chatName, List<String> recipients) {
-		this.chatID = ++IDCount;
+		this.chatID = String.valueOf(++IDCount);
 		this.chatName = chatName;
 		this.recipients = (recipients == null) ? new ArrayList<>(): new ArrayList<>(recipients);
 		this.messages = new ArrayList<>();
@@ -25,24 +25,28 @@ public class GroupChat implements Serializable{
 	}
 	
 	public String getChatID() {
-		return String.valueOf(chatID);
+		return chatID;
+	}
+	
+	public void setChatID(String id) {
+		this.chatID = id;
+		
+		try {
+			int idNum = Integer.parseInt(id);
+			if (idNum >= IDCount) {
+				IDCount = idNum;
+			}
+		} catch (NumberFormatException e) {
+			System.out.println("Could not parse chat ID: " + id);
+		}
 	}
 	
 	public String getChatName() {
 		return chatName;
 	}
 	
-	
-	public List<String> getRecipients() {
+	public List<String> getRecipientList() {
 	    return Collections.unmodifiableList(recipients);
-	}
-
-	// If not already there:
-	public List<Message> getMessages() {
-	    return Collections.unmodifiableList(messages);
-	}
-	/*public String getRecipients() {
-		return String.join(", ", recipients);
 	}
 	
 	public String getMessages() {
@@ -54,12 +58,11 @@ public class GroupChat implements Serializable{
 			 }
 		 }
 		 return sb.toString();
-	}*/
+	}
 	
 	public void setchatName(String name) {
 		this.chatName = name;
 		modified = true;
-		
 	}
 	
 	public void addRecipient(String user) {
@@ -68,9 +71,8 @@ public class GroupChat implements Serializable{
 		}
 		if(!recipients.contains(user)) {
 			recipients.add(user);
-		modified = true;
+			modified = true;
 		}
-		
 	}
 	
 	public void addMessage(Message message) {
@@ -79,7 +81,6 @@ public class GroupChat implements Serializable{
 		}
 		messages.add(message);
 		modified = true;
-		
 	}
 	
 	public void grantUserAccess() {
@@ -89,5 +90,8 @@ public class GroupChat implements Serializable{
 	public void saveChat() {
 		modified = false;
 	}
-
+	
+	public int getMessageCount() {
+		return messages.size();
+	}
 }
