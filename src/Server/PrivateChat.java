@@ -7,33 +7,47 @@ import Common.Message;
 
 public class PrivateChat implements Serializable{
 	
-	private static final long serialVersionUID = 1L;
+private static final long serialVersionUID = 1L;
 	
-	private static int IDCount = 0;    // static counter
-	private final int chatID;    //final unique ID for each chat
-	private String chatName;    //name of chat
-	private String recipients;
-	private List<Message> messages;    //list of messages
-	private boolean modified; 
+	private static int IDCount = 0;
+	private String chatID;  
+	private String chatName;
+	private List<String> recipients;
+	private List<Message> messages;
+	private boolean modified;
 	
-	public PrivateChat(String chatName, String recipients) {
-		this.chatID = ++IDCount;
-		this.chatName = chatName;
-		this.recipients = recipients;
+	public PrivateChat(List<String> recipients) {
+		this.chatID = String.valueOf(++IDCount);
+		this.chatName = String.join(", ", recipients);
+		this.recipients = new ArrayList<>(recipients);
 		this.messages = new ArrayList<>();
 		this.modified = false;
 	}
 	
 	public String getChatID() {
-		return String.valueOf(chatID);
+		return chatID;
+	}
+	
+	
+	public void setChatID(String id) {
+		this.chatID = id;
+		
+		try {
+			int idNum = Integer.parseInt(id);
+			if (idNum >= IDCount) {
+				IDCount = idNum;
+			}
+		} catch (NumberFormatException e) {
+			System.out.println("Could not parse chat ID: " + id);
+		}
 	}
 	
 	public String getChatName() {
 		return chatName;
 	}
 	
-	public String getRecipients() {
-		return recipients;
+	public List<String> getRecipientList() {
+	    return Collections.unmodifiableList(recipients);
 	}
 	
 	public String getMessages() {
@@ -52,12 +66,24 @@ public class PrivateChat implements Serializable{
 			throw new IllegalArgumentException("message cannot be null");
 		}
 		messages.add(message);
-		modified = true;
-		
+		setModified(true);
 	}
 	
 	public void saveChat() {
-		modified = false;
+		setModified(false);
 	}
 
+	public boolean isModified() {
+		return modified;
+	}
+
+	public void setModified(boolean modified) {
+		this.modified = modified;
+	}
+	
+	public int getMessageCount() {
+		return messages.size();
+	}
+	
 }
+
