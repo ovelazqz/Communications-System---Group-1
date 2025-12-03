@@ -16,6 +16,8 @@ public class UserCollection {
 	/** The name of the data file that contains user data */
 	private String sourceName = "src/Server/loginInfo/loginInfo.txt"; 
 	
+	private String sourceAccess = "src/Server/userChatAccess/";
+	
 	
 	private boolean modified;
 	
@@ -140,6 +142,93 @@ public class UserCollection {
 		return numusers;
 	}
 
+	public void addChatToUser(String username, String chatName) {
+	    String[] currentChats = loadUserChats(username);
+	    
+	    if (currentChats == null) {
+	        currentChats = new String[0];
+	    }
+
+	    // Check if chat already exists for this user
+	    for (String chat : currentChats) {
+	        if (chat.equals(chatName)) {
+	            System.out.println("Chat " + chatName + " already exists for user " + username);
+	            return;
+	        }
+	    }
+
+	    // Create new array with additional chat
+	    String[] updatedChats = new String[currentChats.length + 1];
+	    for (int i = 0; i < currentChats.length; i++) {
+	        updatedChats[i] = currentChats[i];
+	    }
+	    updatedChats[currentChats.length] = chatName;
+
+	    saveUserChats(username, updatedChats);
+	}
+	
+	public void removeChatFromUser(String username, String chatName) {
+	    String[] currentChats = loadUserChats(username);
+	    
+	    if (currentChats == null || currentChats.length == 0) {
+	        System.out.println("No chats found for user: " + username);
+	        return;
+	    }
+
+	    java.util.List<String> updatedList = new java.util.ArrayList<>();
+	    boolean found = false;
+
+	    for (String chat : currentChats) {
+	        if (!chat.equals(chatName)) {
+	            updatedList.add(chat);
+	        } else {
+	            found = true;
+	        }
+	    }
+
+	    if (found) {
+	        saveUserChats(username, updatedList.toArray(new String[0]));
+	        System.out.println("Removed chat " + chatName + " from user " + username);
+	    } else {
+	        System.out.println("Chat " + chatName + " not found for user " + username);
+	    }
+	}
+	
+	
+	public String[] loadUserChats(String username) {
+	    if (username == null || username.trim().isEmpty()) {
+	        System.out.println("Invalid username");
+	        return null;
+	    }
+
+	    try {
+	        String filePath = sourceAccess + username + ".txt";
+	        File file = new File(filePath);
+
+	        if (!file.exists()) {
+	            System.out.println("No chat file found for user: " + username);
+	            return new String[0];  // Return empty array
+	        }
+
+	        Scanner scanner = new Scanner(file);
+	        java.util.List<String> chatList = new java.util.ArrayList<>();
+
+	        while (scanner.hasNextLine()) {
+	            String chat = scanner.nextLine().trim();
+	            if (!chat.isEmpty()) {
+	                chatList.add(chat);
+	            }
+	        }
+
+	        scanner.close();
+	        return chatList.toArray(new String[0]);
+
+	    } catch (FileNotFoundException e) {
+	        System.out.println("Error reading user chats: " + e.getMessage());
+	        return null;
+	    }
+	}
+	
 	
 	public void loadData() {
 	    
@@ -189,6 +278,44 @@ public class UserCollection {
 	    }
 	}
 
+	public void saveUserChats(String username, String[] chats) {
+	    if (username == null || username.trim().isEmpty()) {
+	        System.out.println("Invalid username");
+	        return;
+	    }
+
+	    try {
+	        // Create directory if it doesn't exist
+	        File directory = new File(sourceAccess);
+	        if (!directory.exists()) {
+	            directory.mkdirs();
+	            System.out.println("Created directory: " + sourceAccess);
+	        }
+
+	        // Create file path for user's chats
+	        String filePath = sourceAccess + username + ".txt";
+	        File file = new File(filePath);
+
+	        // Create FileWriter to write to the file
+	        FileWriter writer = new FileWriter(filePath);
+
+	        // Write each chat on a new line
+	        if (chats != null) {
+	            for (String chat : chats) {
+	                if (chat != null && !chat.trim().isEmpty()) {
+	                    writer.write(chat.trim() + "\n");
+	                }
+	            }
+	        }
+
+	        writer.close();
+	        System.out.println("Saved chats for user: " + username);
+
+	    } catch (IOException e) {
+	        System.out.println("Error saving user chats: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	}
 	
 	public void save() {
 	    if (modified) {
