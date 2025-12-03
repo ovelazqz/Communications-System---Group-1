@@ -18,13 +18,13 @@ class TestingChatManager {
 	@Test
 	void createPrivateChat_validRecipients_createsAndStoresChat() {
 		ChatManager manager = new ChatManager();
-		List<String> recipients = Arrays.asList("aaron", "brian");
+		List<String> recipients = Arrays.asList("AaronCasas", "BrianHa");
 		
 		PrivateChat chat = manager.createPrivateChat(recipients);
 		
 		assertNotNull(chat);
 		assertNotNull(chat.getChatID());
-		assertEquals("aaron, brian", chat.getRecipients());
+		assertEquals("AaronCasas, BrianHa", chat.getRecipients());
 		
 		assertSame(chat, manager.getPrivateChat(chat.getChatID()));
 		
@@ -33,7 +33,7 @@ class TestingChatManager {
 	@Test
 	void createPrivateChat_tooFewRecipients_throwsException() {
 		ChatManager manager = new ChatManager();
-		List<String> recipients = Collections.singletonList("aaron");
+		List<String> recipients = Collections.singletonList("AaronCasas");
 		
 		assertThrows(IllegalArgumentException.class, 
 				() -> manager.createPrivateChat(recipients));
@@ -42,7 +42,7 @@ class TestingChatManager {
 	@Test
 	void createGroupChat_validData_createsAndStoresChat() {
 		ChatManager manager = new ChatManager();
-		List<String> recipients = Arrays.asList("aaron", "brian", "carlos");
+		List<String> recipients = Arrays.asList("AaronCasas", "BrianHa", "CarlosMartin");
 		
 		GroupChat chat = manager.createGroupChat("Friends", recipients);
 		
@@ -56,7 +56,7 @@ class TestingChatManager {
 	@Test
 	void createGroupChat_emptyName_throwsException() {
 		ChatManager manager = new ChatManager();
-		List<String> recipients = Arrays.asList("aaron", "brian");
+		List<String> recipients = Arrays.asList("AaronCasas", "BrianHa");
 		
 		assertThrows(IllegalArgumentException.class,
 				() -> manager.createGroupChat("", recipients));
